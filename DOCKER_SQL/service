@@ -47,5 +47,20 @@ python ingest_data.py \
     --host=localhost \
     --port=5432 \
     --db=ny_taxi \
-    --table_name=yellow_taxi_data \
+    --table_name=yellow_taxi_trips \
     --url=${URL}
+
+# comando para correr docker con el ingest_data
+docker build -t taxi_ingest:v001 .
+
+# antes de taxi son parametros de docker, despues son parametros que usa la imagen
+docker run -it \
+    --network=pg-network \
+    taxi_ingest:v001 \
+        --user=root \
+        --password=root \
+        --host=pg-database \
+        --port=5432 \
+        --db=ny_taxi \
+        --table_name=yellow_taxi_trips \
+        --url=${URL}

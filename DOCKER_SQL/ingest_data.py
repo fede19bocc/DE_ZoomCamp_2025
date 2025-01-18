@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 from time import time
+
 import os
 import argparse
+
 import pandas as pd
 from sqlalchemy import create_engine
 
@@ -15,14 +17,20 @@ def main(params):
     db = params.db
     table_name = params.table_name
     url = params.url    
-    csv_name = 'output.csv'
     
+    # el archivo esta guardado como gzipped en git, y es importante guardarlo en la version correcta
+    #  para que pandas lo pueda abrir
+    if url.endswith('.csv.gz'):
+        csv_name = 'output.csv.gz'
+    else:
+        csv_name = 'output.csv'
+        
     #usa el comando wget en terminal para importar un csv a la variable csv_name
     os.system(f"wget {url} -O {csv_name}")
     
     engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{db}')
 
-    df_iter = pd.read_csv(csv_name, iterator=True, chunksize=100000, compression='gzip')
+    df_iter = pd.read_csv(csv_name, iterator=True, chunksize=100000)
 
     df = next(df_iter)
 
@@ -33,16 +41,23 @@ def main(params):
 
     # procesa pedazos de 100000 lineas del csv y los agrega a la db
     while True:
-        t_start = time()
-        df = next(df_iter)
+        try:
+            t_start = time()
+            
+            df = next(df_iter)
 
-        df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
-        df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
+            df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
+            df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
 
-        df.to_sql(name=table_name, con=engine, if_exists='append')
+            df.to_sql(name=table_name, con=engine, if_exists='append')
 
-        t_end = time()
-        print('inserted another chunk..., took %.3f second' % (t_end - t_start))
+            t_end = time()
+
+            print('inserted another chunk, took %.3f second' % (t_end - t_start))
+
+        except StopIteration:
+            print("Finished ingesting data into the postgres database")
+            break
 
 
 if __name__ == '__main__':

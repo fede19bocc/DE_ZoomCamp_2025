@@ -54,13 +54,28 @@ python ingest_data.py \
 docker build -t taxi_ingest:v001 .
 
 # antes de taxi son parametros de docker, despues son parametros que usa la imagen
+URL="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
 docker run -it \
-    --network=pg-network \
+    --network=docker_sql_default \
     taxi_ingest:v001 \
         --user=root \
         --password=root \
-        --host=pg-database \
+        --host=pgdatabase \
         --port=5432 \
         --db=ny_taxi \
         --table_name=yellow_taxi_trips \
         --url=${URL}
+
+# cambiar permisos en ny_taxi_postgres_data
+sudo chmod -R 777 ny_taxi_postgres_data/
+
+sudo chown -R codespace:codespace ny_taxi_postgres_data && sudo chmod -R 777 ny_taxi_postgres_data/
+
+sudo chown -R 5050:5050 data_pgadmin && sudo chmod -R 777 data_pgadmin/
+
+# Verificar y Corregir los Permisos del Directorio Montado
+sudo chmod -R 777 ./ny_taxi_postgres_data
+# Eliminar el Contenido del Volumen para Forzar una Nueva Inicialización
+sudo rm -rf ./ny_taxi_postgres_data/*
+
+# lo mismo paa data_pgadmin si falla docker compose

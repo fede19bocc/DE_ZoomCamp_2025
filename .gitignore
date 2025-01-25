@@ -1,0 +1,3 @@
+DOCKER_SQL/taxi_zone_lookup.csv
+DOCKER_SQL/yellow_tripdata_2021-01.csv.gz
+ny_taxi_postgres_data

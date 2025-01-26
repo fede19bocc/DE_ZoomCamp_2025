@@ -8,7 +8,7 @@
  } 
 
  provider "google" {
-    credentials = "/home/fedeB19/terrademo/keys/my_cred.json"
+    credentials = "/home/fedeB19/DE_ZoomCamp_2025/terrademo/keys/my_cred.json"
     project = "confident-truth-421422"
     region  = "southamerica-east1" 
  }

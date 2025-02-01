@@ -1,4 +1,5 @@
 DOCKER_SQL/taxi_zone_lookup.csv
 DOCKER_SQL/yellow_tripdata_2021-01.csv.gz
 DOCKER_SQL/green_tripdata_2019-10.csv.gz
-ny_taxi_postgres_data
+DOCKER_SQL/ny_taxi_postgres_data
+DOCKER_SQL/data_pgadmin

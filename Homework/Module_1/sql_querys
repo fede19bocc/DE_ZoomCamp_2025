@@ -1,0 +1,76 @@
+########### Q3 ###########
+SELECT
+    SUM(CASE WHEN trip_distance <= 1 THEN 1 ELSE 0 END) AS "Up to 1 mile",
+    SUM(CASE WHEN trip_distance > 1 AND trip_distance <= 3 THEN 1 ELSE 0 END) AS "1 to 3 miles",
+    SUM(CASE WHEN trip_distance > 3 AND trip_distance <= 7 THEN 1 ELSE 0 END) AS "3 to 7 miles",
+    SUM(CASE WHEN trip_distance > 7 AND trip_distance <= 10 THEN 1 ELSE 0 END) AS "7 to 10 miles",
+    SUM(CASE WHEN trip_distance > 10 THEN 1 ELSE 0 END) AS "Over 10 miles"
+FROM
+    green_trips 
+WHERE
+    lpep_pickup_datetime >= '2019-10-01'
+    AND lpep_pickup_datetime < '2019-11-01';
+
+########### Q4 ###########
+WITH DailyLongestTrips AS (
+    SELECT
+        DATE(lpep_pickup_datetime) AS pickup_date,
+        MAX(trip_distance) AS max_distance
+    FROM
+        green_trips
+    GROUP BY
+        DATE(lpep_pickup_datetime)
+)
+SELECT
+    d.pickup_date,
+    d.max_distance,
+    g.lpep_pickup_datetime,
+    g.lpep_dropoff_datetime,
+    g.trip_distance
+FROM
+    DailyLongestTrips d
+JOIN
+    green_trips g
+ON
+    DATE(g.lpep_pickup_datetime) = d.pickup_date
+    AND g.trip_distance = d.max_distance
+ORDER BY
+    d.max_distance DESC
+LIMIT 1;
+
+############# Q5 #########
+SELECT
+    z."Zone" AS pickup_zone,
+    SUM(gt."total_amount") AS total_amount_sum
+FROM
+    green_trips gt
+JOIN
+    zones z ON gt."PULocationID" = z."LocationID"
+WHERE
+    DATE(gt."lpep_pickup_datetime") = '2019-10-18'
+GROUP BY
+    z."Zone"
+HAVING
+    SUM(gt."total_amount") > 13000
+ORDER BY
+    total_amount_sum DESC;
+
+########## Q6 #########
+
+SELECT
+    z_dropoff."Zone" AS dropoff_zone,
+    MAX(gt."tip_amount") AS max_tip_amount
+FROM
+    green_trips gt
+JOIN
+    zones z_pickup ON gt."PULocationID" = z_pickup."LocationID"
+JOIN
+    zones z_dropoff ON gt."DOLocationID" = z_dropoff."LocationID"
+WHERE
+    z_pickup."Zone" = 'East Harlem North'
+    AND DATE_TRUNC('month', gt."lpep_pickup_datetime") = '2019-10-01'
+GROUP BY
+    z_dropoff."Zone"
+ORDER BY
+    max_tip_amount DESC
+LIMIT 1;
